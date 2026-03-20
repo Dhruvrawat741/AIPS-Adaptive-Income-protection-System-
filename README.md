@@ -6,101 +6,109 @@
 
 ## What we are building and why
 
-AIPS is a parametric insurance platform for Q-commerce delivery partners — specifically Zepto and Blinkit workers. The core idea is simple: when something outside a worker's control stops them from earning (a storm, a heatwave, a curfew), they should get paid automatically without filing any paperwork.
+So here is the problem we kept coming back to. Delivery workers in India lose a chunk of their monthly income every time it rains hard, or a heatwave hits, or the government shuts down the internet in their district. None of that is their fault. And none of it is covered by any insurance product that exists right now.
 
-Right now, no product does this. Platform insurance from Zomato or Blinkit covers accidents and hospitalizations. That is useful, but it completely misses the most common income loss event — a worker losing ₹600 because their zone flooded for 5 hours. There is no claim form for that. No hospital visit. The money is just gone.
+The platform insurance from Zomato or Blinkit? It pays out after accidents. After hospitalizations. It is genuinely useful for those situations but it completely ignores the most common income loss event these workers face — losing ₹700 because their zone flooded for five hours during a storm. There is no hospital visit for that. No police report. The money is just gone and there is nothing they can do about it.
 
-We want to fix that.
+That is what AIPS is trying to solve.
 
-The "parametric" part means payouts are triggered by external measurable events — rainfall crossing a threshold, AQI crossing a level — rather than by the worker submitting a loss report. This matters because it removes the entire claims process. The system watches, detects, and pays. The worker does nothing.
+Parametric insurance means the payout is based on an external measurable index — rainfall crossing a certain level, AQI crossing a certain level — rather than on the worker filing a loss claim. The worker does not report anything. The system watches the data feeds, detects when something bad happened, checks that the worker was actually there and working, and sends money to their UPI. That whole process takes under 2 hours. No forms. No call center. No waiting.
 
 ---
 
-## Why we picked Zepto and Blinkit
+## The two ideas that actually make this different
 
-We deliberately avoided Zomato and Swiggy. Everyone will build for them.
+We want to be upfront about this because most weather insurance for gig workers is honestly not that differentiated. The two things that we think are genuinely new here are the incentive delta and the score recovery supplement. Both came from reading the actual research on how Q-commerce workers earn. Neither exists in any product we could find.
 
-Q-commerce workers actually have a more severe income problem, and here is why. A Zepto worker has to complete, say, 20 orders to earn a ₹150 daily bonus. If a sudden storm forces them to stop at order 19, they do not just lose one order's pay — they lose the entire ₹150 bonus. One disruption wipes the whole day's incentive. This cliff-edge earnings structure makes Q-commerce workers more vulnerable than food delivery workers, not less.
+**The incentive cliff.** A Zepto worker needs to hit 20 orders in a day to unlock a ₹150 bonus. If a storm forces them to stop at 19, they do not lose one order's worth of pay. They lose the entire ₹150. One disruption, half an hour before they would have finished, wipes the whole day's incentive. Standard hourly income replacement completely misses this. So we built the Incentive Delta — any payout for a trigger event that falls in the 7pm to 11pm window gets an extra ₹150 added to account for the milestone they could not reach.
 
-On top of that, Zepto and Blinkit do not offer rain surge payments. Zomato does. So Q-commerce workers already have less protection built in.
+**The algorithmic aftereffect.** This one took us a while to notice. When a disruption forces a worker offline, their acceptance rate falls. Their completion rate looks worse. The platform algorithm notices and starts assigning them fewer orders for the next 3 to 5 days — even after the weather clears. So the income loss from one storm actually stretches across most of a week. AIPS tracks acceptance rate and assignment frequency in the 5 days after a confirmed trigger event. If there is a measurable drop, the payout includes a Score Recovery Supplement. We have not seen any other insurance product model this.
 
-They also operate within a 2km radius of a dark store. They cannot reroute around a flooded street the way a food delivery worker sometimes can. When the zone is down, they are down.
+---
+
+## Why Zepto and Blinkit specifically
+
+Honestly, everyone is going to build this for Zomato and Swiggy. We did not want to do that.
+
+Q-commerce workers are in a worse position than food delivery workers for three reasons that are easy to miss. First, they work within a 2km radius of a dark store. They cannot reroute around a flooded street. When the zone goes down, they go down. Second, Zepto and Blinkit do not offer rain surge payments. Zomato does. So Q-commerce workers absorb the full cost of weather disruptions with no compensation at all. Third, the incentive cliff structure we described above is more severe in Q-commerce than in food delivery because of the higher order frequency and tighter time windows.
 
 ---
 
 ## The worker we are designing for
 
-We are calling him Rajan. 28 years old, Zepto partner, works out of the HSR Layout dark store in Bengaluru.
+We are calling him Rajan. 28, Zepto partner, based out of the HSR Layout dark store in Bengaluru.
 
-He works about 10 hours a day, 26 days a month. Gross monthly earnings come to around ₹27,000. After fuel and bike maintenance — which we estimate at 30% of gross, based on an IDInsight study of two-wheeler delivery workers from 2024 — he takes home around ₹21,000 net. That is roughly ₹810 per day, ₹100 per hour.
+10 hours a day, 26 days a month. Gross earnings around ₹27,000 per month. After fuel and bike maintenance — we estimated this at 30 percent of gross, which is actually slightly conservative compared to the 32 percent figure from the IDInsight two-wheeler delivery study from 2024 — he takes home about ₹21,000. Roughly ₹810 a day, ₹100 an hour.
 
-His platform insurance covers accidents only. Completely useless when his zone floods.
+His current insurance covers accidents. That is it.
 
-When Bengaluru gets a cloudburst and his zone shuts for 5 hours including the 7pm to 11pm peak window, Rajan loses ₹500 in hourly earnings and ₹200 in voided milestone bonuses. Total loss is ₹700. AIPS would pay him ₹636 automatically, within 2 hours of the event, directly to his UPI account. No form. No call center. No wait.
+When a cloudburst shuts his zone for 5 hours including the evening peak, Rajan loses ₹500 in hourly pay and ₹200 in voided milestone bonuses. Seven hundred rupees gone. AIPS would pay him ₹636 within 2 hours. Not perfect compensation but close, and he gets it without doing anything.
 
 ---
 
-## How weekly pricing works
+## The demo we are building toward
 
-We price weekly because platforms pay weekly. Zepto and Blinkit settle with partners every week, so a weekly insurance premium fits naturally into when money is already moving. A monthly premium would require workers to budget ahead — that creates friction we do not need.
+We want to be specific about what the actual demo looks like because vague demos are a waste of everyone's time.
 
-### Setting each worker's baseline
+We simulate a rainstorm in Bengaluru. The OpenWeather feed shows rainfall in the HSR Layout zone crossing 6mm per hour. The trigger engine picks this up within 15 minutes. It checks that Rajan was logged in for at least 2 hours that day and that his GPS puts him in the zone. Fraud checks run. The event overlaps the 7pm to 11pm window. Payout calculated: 60 percent of his daily earning plus the ₹150 Incentive Delta, coming to ₹636. Razorpay sandbox fires the transfer.
 
-Every worker has what we call a Baseline Weekly Earning, or BWE. We calculate it as the median of their last 8 weeks of net earnings.
+No manual steps anywhere in that chain. That is what we are demoing.
 
-We use 8 weeks, not 4, because 4 weeks can be skewed by one unusually good or bad week. The median is more stable than the average for the same reason. Net earnings are calculated by taking platform payouts and subtracting the cost ratio.
+---
+
+## How the trigger engine works
+
+The trigger engine is the core of the product. Everything else — premiums, fraud checks, payouts — exists to support it or is downstream of it.
+
+Every 15 minutes, it polls three external sources: OpenWeather for rainfall, temperature, and humidity; OpenAQ for AQI data; and the SFLC.in RSS feed for internet shutdown records. It evaluates whether any trigger condition has been met for any active zone. If yes, it pulls the GPS log for workers in that zone to check exposure. It scores the claim for fraud using the rule-based checklist. Depending on that score, it either dispatches a payout automatically, sends it to a human reviewer, or denies it with a written reason. All of this is logged with a full audit trail.
+
+---
+
+## Weekly pricing and how we calculate it
+
+We price weekly because Zepto and Blinkit pay their partners weekly. Aligning the premium with the payout cycle means the money for the premium is already in the worker's account when the debit hits. Monthly premiums would require workers to budget ahead in a way that is genuinely hard when your income is variable and weekly.
+
+Every worker's premium is anchored to their Baseline Weekly Earning, which we calculate as the median of their last 8 weeks of net earnings. We use the median rather than the average because one unusually good or bad week can pull the average significantly. Eight weeks rather than four because four weeks can be skewed by a single disruption event.
 
 ```
-BWE = median of the last 8 weeks of (platform payout x (1 minus cost ratio))
+BWE = median of (last 8 weeks of platform payout x (1 minus cost ratio))
 
-Cost ratio is 0.30 for petrol bikes
-Cost ratio is 0.15 for electric vehicles or cycles
+Petrol bike cost ratio: 0.30
+EV or cycle cost ratio: 0.15
 ```
 
-The EV discount reflects reality — electric riders spend significantly less on fuel and maintenance. The IDInsight study puts average costs at 32% of gross for petrol vehicles. We use 30% as a slightly conservative estimate.
+The three tiers:
 
-### The three tiers
+| Tier | Weekly premium | Max payout per week | Who it suits |
+|------|---------------|---------------------|--------------|
+| Basic | ₹70 to ₹90 | 40% of BWE | Under 5 hours a day |
+| Standard | ₹100 to ₹130 | 60% of BWE | 6 to 9 hours a day |
+| Premium | ₹145 to ₹180 | 80% of BWE plus incentive bonus | 10 plus hours a day |
 
-| Tier | Weekly premium | Max payout per week | Who it is for |
-|------|---------------|---------------------|---------------|
-| Basic | ₹70 to ₹90 | 40% of BWE | Part-time, under 5 hours a day |
-| Standard | ₹100 to ₹130 | 60% of BWE | Full-time, 6 to 9 hours a day |
-| Premium | ₹145 to ₹180 | 80% of BWE plus incentive bonus | Power riders, 10 plus hours a day |
-
-### What makes the premium go up or down
-
-The base tier premium is not fixed. It adjusts each week based on a few factors:
-
-The worker's zone has a history of flooding or severe heat: premium increases 8 to 12 percent. It is monsoon season (June through September): premium increases 5 to 15 percent depending on forecast confidence. The worker rides an EV or cycle: flat ₹10 per week discount. The worker has had 12 clean consecutive weeks with no suspicious claims: 5 percent loyalty discount. The worker filed a claim in the last 4 weeks: 5 percent increase, reflecting higher short-term risk.
-
-In the hackathon build, this is a weighted formula. We have been transparent about that. In Phase 3, once we have actual earnings and claims data to train on, this becomes an XGBoost regression model. We are not calling it AI in the MVP because it is not — it is arithmetic with good inputs.
+The premium adjusts each week based on zone flood and heat history, the current season, vehicle type, how long the worker has been on the platform, and whether they claimed recently. In the MVP this is a weighted formula. We are not calling it AI because it is not — it is arithmetic with good inputs. The XGBoost pricing model is planned for Phase 3 once we have real claims data to train on.
 
 ---
 
 ## The five triggers
 
-These are the five events that can activate a payout. All of them use external, publicly available data. The worker reports nothing.
+### Heavy rain
 
-### Trigger 1: Heavy rain
+Rainfall data from the OpenWeather One Call API, checked every 15 minutes, measured in millimeters per hour at the dark store GPS location.
 
-We pull rainfall data from the OpenWeather One Call API every 15 minutes. The key metric is millimeters of rain per hour at the GPS location of the worker's dark store.
+Each city has its own threshold and this was a deliberate design decision. Delhi's drainage infrastructure fails at around 2.43mm per hour. Mumbai's handles around 8mm per hour before streets start flooding. Those numbers come from a 2025 ResearchGate study on urban precipitation failure points in Indian cities. A single national threshold would mean paying out in Mumbai when nothing is disrupted, or missing events in Delhi. Basis risk — the gap between what the index says and what the worker actually experienced — is the main way parametric products fail, so we built around it from the start.
 
-Each city gets its own threshold. This was an important design decision. A lot of parametric insurance products use a single national rainfall threshold and then wonder why payouts do not match actual losses. The reason is that Delhi's drainage system fails at 2.43mm per hour while Mumbai's tolerates around 8mm per hour before streets start flooding. That difference is documented in a 2025 ResearchGate study on urban precipitation in Indian cities. We use city-specific numbers because basis risk — the gap between what the index says and what the worker actually experienced — is the biggest technical failure mode of parametric products.
-
-| City | Threshold |
-|------|-----------|
+| City | Trigger |
+|------|---------|
 | Delhi | 5mm per hour |
 | Bengaluru | 6mm per hour |
 | Hyderabad | 7mm per hour |
 | Mumbai | 10mm per hour |
 
-Payout is 60% of the daily earning for a partial shutdown event (under 4 hours). For a full-day zone closure it is 100%. If the rain hits between 7pm and 11pm — the peak earning window where milestone bonuses are at stake — there is an additional ₹150 supplement we call the Incentive Delta. More on that in a moment.
+Partial event under 4 hours: 60 percent of daily earning. Full day zone closure: 100 percent. Event in 7pm to 11pm window: add the ₹150 Incentive Delta.
 
-### Trigger 2: Extreme heat
+### Extreme heat
 
-Raw temperature is not enough. A 42°C day in Delhi with 60% humidity feels significantly worse on a human body than 42°C with 20% humidity. We compute the Heat Index, which combines temperature and relative humidity into a single "feels like" temperature. This is standard in occupational health research and matches how the body actually responds to heat stress.
-
-Both data points — temperature and humidity — come from the same OpenWeather API call we are already making for rainfall. No extra API needed.
+We compute the Heat Index rather than using raw temperature. The Heat Index combines temperature and relative humidity into a single value that reflects how the body actually experiences the conditions. A 42°C day with 60 percent humidity hits a human body very differently than 42°C with 20 percent humidity. Both data points come from the same OpenWeather call we are already making, so no additional API is needed.
 
 | Heat Index | Payout |
 |-----------|--------|
@@ -108,261 +116,164 @@ Both data points — temperature and humidity — come from the same OpenWeather
 | Above 45°C for 2 or more hours | 60% of daily earning |
 | Above 48°C | 100% of daily earning |
 
-These thresholds line up with India's official heatwave definitions from the IMD. A 2025 study from IDeasForIndia tracked Delhi gig workers during heatwave weeks and found they reduced working hours by 1.2 hours per day and skipped 0.8 days per week compared to normal weeks. That data informs our payout percentages.
+These thresholds match the IMD's official heatwave definitions. A 2025 IDeasForIndia study found gig workers reduced their hours by 1.2 per day and missed 0.8 days per week during heatwave periods compared to normal weeks.
 
-### Trigger 3: Severe air pollution
+### Severe air pollution
 
-We use the OpenAQ API, which is open source and aggregates data from India's official CPCB monitoring network. The trigger index is the 24-hour average AQI at the monitoring station closest to the worker's zone.
+OpenAQ API, which is open source and pulls from India's official CPCB monitoring stations. When Delhi's AQI crosses 400 the government activates GRAP Stage III — schools close, construction stops, but delivery workers keep riding because they cannot afford not to.
 
-When Delhi's AQI crosses 400, the government activates GRAP Stage III — a pollution emergency. Schools close. Construction stops. But delivery workers keep riding because they cannot afford not to. A TGPWU survey from 2024 found that 52% of outdoor gig workers reported physical symptoms directly reducing their output during severe pollution days. Their productivity drops 15 to 20% per hour, which translates directly into fewer orders completed, which means less money earned.
+A TGPWU survey from 2024 found that 52 percent of outdoor gig workers reported physical symptoms directly reducing their output on severe pollution days. That is a 15 to 20 percent productivity drop per hour, which means fewer orders completed, which means less money. We frame this as income loss from impaired earning capacity rather than as a health benefit because the coverage scope is income only. The mechanism is identical either way.
 
-This is income loss from impaired earning capacity. We frame it that way because the alternative framing — a health benefit — falls outside our coverage scope. The mechanism is the same. The framing matters for compliance.
-
-| AQI level | Daily payment |
-|-----------|--------------|
-| 300 to 400 (Very Poor) | ₹100 |
+| AQI | Daily payment |
+|-----|--------------|
+| 300 to 400 | ₹100 |
 | Above 400, GRAP Stage III | ₹200 |
 | Above 450, GRAP Stage IV | ₹300 |
 
-The worker must have logged in for at least 2 hours that day. We need proof of exposure, not just proof that the air was bad.
+Worker must have been logged in for at least 2 hours. We need evidence of exposure, not just that the air was bad.
 
-### Trigger 4: Curfew or zone closure
+### Curfew or zone closure
 
-This one is harder to automate cleanly because government notifications are not machine-readable in any standardized way. Our plan for the MVP is a combination of scraping CAQM and state disaster management websites, plus a simulated platform zone status flag. We are honest that in the real product this would require either a direct API partnership with Zepto and Blinkit or a more robust notification scraping pipeline.
+This is the hardest trigger to automate well and we want to be honest about that. Government notifications are not published in any machine-readable standard format. Our MVP uses a combination of scraping CAQM and state disaster management websites plus a simulated platform zone status flag. A production version of this would need either a direct data partnership with Zepto and Blinkit or a more robust scraping setup. We are not pretending otherwise.
 
-If a zone is confirmed closed during the 7pm to 11pm peak window for 2 or more hours, the payout is 50% of the daily baseline for each affected peak day.
+If a zone is confirmed closed during the 7pm to 11pm window for 2 or more hours, payout is 50 percent of the daily baseline for each affected peak day.
 
-### Trigger 5: Internet shutdown
+### Internet shutdown
 
-India leads the world in government-ordered internet shutdowns. For a delivery worker, the internet is their workplace. No connectivity means zero orders, zero income.
+India runs more government-ordered internet shutdowns than almost any other country. For a delivery worker the internet is their workplace. No connectivity, no orders, no income.
 
-We use the SFLC.in shutdown tracker, which publishes a real-time RSS feed of shutdowns by district and time. It is run by the Software Freedom Law Centre and is the most complete public record of Indian internet shutdowns we could find. We cross-reference their data with our own app heartbeat monitoring — if more than 70% of workers in a pin code stop responding while the neighboring pin code is fine, we flag a shutdown event.
-
-Payout is 80% of the daily earning for a full-day shutdown. For partial shutdowns we pro-rate by the number of affected hours. The worker must have been active at least 3 days in the prior week to be eligible. This prevents someone from signing up right before an announced shutdown.
+We use the SFLC.in shutdown tracker, which publishes a real-time RSS feed of shutdowns by district. We cross-reference it with our app heartbeat data — if over 70 percent of workers in a pin code go silent while the neighboring pin code is fine, we call it. Full day shutdown pays 80 percent of daily earning. Partial shutdowns are pro-rated. Worker must have been active at least 3 days in the prior week, which prevents someone from signing up right before an announced shutdown.
 
 ---
 
-## The incentive delta: a feature specific to Q-commerce
+## Basis risk — the known limitation we are not hiding
 
-This deserves its own section because it is one of the most important ideas in the product and it is unique to how Q-commerce workers earn.
+Every parametric insurance product has basis risk. The payout is based on an index, not on the worker's actual loss. A trigger can fire when a worker still managed to earn. A trigger can miss when a worker genuinely lost income. We cannot eliminate this.
 
-Delivery workers on Zepto and Blinkit earn a base amount per order plus milestone bonuses for hitting daily or weekly order counts. The bonus is binary — you either hit the milestone and get ₹150, or you miss it and get nothing. There is no partial credit for 19 out of 20 orders.
+What we do to reduce it: city-specific thresholds instead of national ones bring the index closer to the actual local disruption. Requiring minimum activity before the event filters out workers who were not going to earn anyway. Weekly payout caps control over-compensation when multiple triggers fire together. The 8-week rolling baseline means the payout reference reflects the worker's actual recent earnings, not a fixed national average.
 
-This creates what we call the incentive cliff. If a storm hits at 9pm and forces a worker to stop at 19 orders instead of 20, they lose not just the income from the last order but the entire ₹150 milestone. A 30 to 60 minute disruption during peak hours can reduce daily income by 15% or more.
-
-Standard hourly income replacement would not capture this. Our Incentive Delta supplement adds ₹150 to any payout for a trigger event that falls within the 7pm to 11pm window. That window is when milestone bonuses are being earned. If the disruption hits there, the payout accounts for the cliff, not just the missed hours.
-
-No other insurance product we have found models this. It is specific to the economics of Q-commerce work and it came directly from reading research on how gig workers actually earn.
+The honest tradeoff is that workers get paid within 2 hours instead of waiting weeks for a claims process, at the cost of some precision. For someone earning ₹800 a day that speed matters a lot.
 
 ---
 
-## How we handle fraud
+## Fraud detection
 
-Parametric insurance is actually easier to defraud than traditional insurance in some ways. Because payouts are automatic and based on external triggers, a bad actor does not need to fabricate a loss — they just need to appear to be in the right place at the right time when a trigger fires.
+### Basic motion validation
 
-Here are the specific fraud vectors we are defending against and how.
+Some workers use fake location apps to appear in a zone they are not in. We cross-reference GPS data with the phone's accelerometer. If GPS shows movement at 30 km/h but the accelerometer reads no physical motion, that is a flag. We are calling this basic motion validation rather than IMU-based fraud detection because that is honestly what the MVP version is. The full motion signature model using an LSTM trained on real delivery patterns is Phase 3 work.
 
-### GPS spoofing
+### Passive login fraud
 
-Workers sometimes use fake location apps to make their phone appear in a zone it is not in. This is common enough that the Times of India ran a story about it in 2025.
+Someone could log in, do nothing, and wait for a trigger to fire. We require a minimum of 10 hours of actual activity during any trigger week for the Standard tier payout.
 
-Our defense is to cross-reference GPS coordinates with the phone's accelerometer and gyroscope — together called the IMU (Inertial Measurement Unit). If the GPS shows the worker moving at 30 km/h on a bike but the accelerometer reads zero physical motion, that is a flag. Real bike movement has a signature: speed variation, minor vibrations, turns. A fake GPS path does not.
+### Pre-event inactivity gaming
 
-In the MVP this is a threshold check. In Phase 3 we plan to train an LSTM — a type of neural network that is good at detecting patterns in time-series data — on real delivery movement logs to distinguish genuine riding patterns from simulated ones.
+If a worker barely worked for 3 days before a forecast heatwave and then claims income loss, that is suspicious. We require at least 3 active days of 4 or more hours each in the 7 days before any claim week. The earnings baseline is locked when the policy starts and cannot be changed after a trigger event is announced.
 
-### Pre-event inactivity
+### Multi-platform double claiming
 
-Someone who knows a heatwave is forecast could sign up for coverage, avoid working for a few days to maximize their apparent "loss," and then claim. We prevent this with two rules. First, a worker must have at least 3 active days of 4 or more hours each in the 7 days before any claim week. Second, the baseline earning figure is locked when the policy starts. It cannot be updated after a trigger event is announced.
+A worker insured on their Zepto account could switch to Swiggy during a rain event and earn there while claiming loss here. We use a government ID-linked Unique Partner ID — one policy per person regardless of how many platform accounts they hold.
 
-### Working on another platform during the event
+### Zone-level coordinated fraud
 
-A worker insured under their Zepto account could shift to Swiggy during a rain event, earning there while claiming a loss on the Zepto side. Our defense is a government ID-linked Unique Partner ID. One policy per person, regardless of how many platform accounts they hold. If GPS shows consistent movement patterns during the event window, we investigate further.
+If 50 or more workers in the same zone show synchronized earnings drops with no external trigger confirmed, that is a Zone Fraud Alert and goes straight to a human reviewer.
 
-### Coordinated zone fraud
+### The payout decision tiers
 
-If 50 or more workers in the same zone all show a synchronized earnings drop with no corresponding external trigger event, that is a Zone Fraud Alert. The probability of that happening naturally is very low. It goes to a human reviewer immediately.
-
-### The three-tier decision
-
-Every potential payout passes through this logic:
-
-Fraud score below 0.4: payout executes automatically. No human involved.
-Fraud score between 0.4 and 0.75: the claim is held and a human reviewer has 4 hours to approve or deny with the full evidence in front of them.
-Fraud score above 0.75: automatic denial. The worker receives a reason and has the right to appeal.
-
-In the MVP, fraud scores come from a rule-based checklist. It is not ML yet. But the structure — the three tiers, the human review queue, the appeal rights — is designed to work the same way regardless of whether the score comes from rules or a model.
+Below 0.4 fraud score: automatic payout.
+Between 0.4 and 0.75: human reviewer has 4 hours with full evidence.
+Above 0.75: automatic denial with reason and appeal rights.
 
 ---
 
-## Why we are using blockchain
+## Blockchain — the honest version
 
-We want to be upfront about why blockchain is in this product, because a lot of projects add it as decoration.
+We are using blockchain for a specific reason, not because it sounds impressive.
 
-The real problem is this: insurance companies have strong financial incentives to deny or delay claims. For a worker earning ₹800 a day, a disputed ₹500 claim is not worth fighting legally. The insurer knows this. Traditionally, the worker has no recourse.
+Insurance companies have financial incentives to deny or delay claims. For a worker earning ₹800 a day, a disputed ₹500 payout is not worth fighting in court. They have no leverage. Historically that asymmetry goes one way.
 
-Blockchain addresses one specific part of this: it makes the policy terms and the trigger records tamper-proof. When a worker activates coverage, the exact thresholds — "Bengaluru rainfall trigger: 6mm per hour" — are written to a smart contract on the Polygon blockchain. They cannot be changed after that. By anyone. Including us.
+Blockchain fixes one specific part of this: it makes the policy terms and the trigger records impossible to alter after the fact. When a worker activates coverage, the exact thresholds are written to a smart contract on Polygon. When a trigger fires, the Chainlink oracle writes the event on-chain. That record is permanent and public. The insurer cannot later claim the threshold was not crossed or that the data said something different.
 
-When a trigger fires, the data from the external API is brought on-chain by a Chainlink oracle — a service specifically designed to bring real-world data onto blockchains in a verifiable way. This creates a permanent, public record: "At 21:43 on June 14, rainfall in HSR Layout zone exceeded 6mm per hour." The insurer cannot later claim the threshold was not crossed. The record exists and is public.
+We chose Polygon over Ethereum mainnet because Polygon settles in about 2 seconds at under ₹1 per transaction. Ethereum at current gas prices makes ₹200 micropayments economically impossible. We looked at Hyperledger Fabric and rejected it because a private chain controlled by the insurer defeats the entire transparency argument.
 
-The payout smart contract reads this record and either executes the payout automatically or routes it to human review based on the fraud score. The human reviewer's decision is also written on-chain. Every approval and every denial is permanently recorded, with the reason.
-
-### Why Polygon and not Ethereum mainnet
-
-Ethereum mainnet is too slow and too expensive for this use case. Transactions take 12 seconds and cost significant gas fees. We are processing 15-minute trigger polls and paying out amounts as small as ₹200. The economics do not work.
-
-Polygon is an Ethereum Layer 2 network. It processes transactions in about 2 seconds and costs under ₹1 per transaction. Smart contracts are written in standard Solidity and work identically to Ethereum. Several Indian fintech projects have already used it in the RBI sandbox environment.
-
-We also considered Hyperledger Fabric, which is a private permissioned blockchain used by enterprises. We rejected it because a chain controlled by the insurer defeats the entire transparency purpose. Workers need to be able to verify the chain independently, not trust that the insurer is running it honestly.
-
-### What humans can and cannot do in this system
-
-Humans review fraud cases. They approve or deny held claims. They handle appeals. Their decisions are recorded on-chain.
-
-Humans cannot alter the trigger record after the fact. They cannot change policy terms once activated. They cannot block a payout the smart contract already executed. They cannot deny a claim without the reason being written permanently to the chain.
-
-The design is intentional. Human judgment is valuable for ambiguous fraud cases. It is a liability for routine approved payouts.
+**Scope note:** In the MVP, the blockchain layer is simulated for the demo. Full Chainlink oracle integration and live smart contract execution are Phase 3 work. We are not claiming to have built that in a 6-week hackathon.
 
 ---
 
-## All the factors we use
+## All factors the system uses
 
-We wanted to list every input the system uses, organized by what decision each one feeds into.
+For premium calculation: zone flood, heat, and AQI history over 2 years; vehicle type; rolling 8-week median net earnings; current season and forecast; worker tenure; prior claims in last 4 weeks.
 
-### For calculating the weekly premium
-The worker's zone flood, heat, and AQI history over the past 2 years. Vehicle type — petrol bike versus EV or cycle. The rolling 8-week median of net earnings. Current season and IMD seasonal forecast. How long the worker has been on the platform. Prior claims in the last 4 weeks.
+For trigger eligibility: hours logged in on event day (min 2); GPS confirms zone presence; at least 3 active days in prior 7 days; whether event hit 7pm to 11pm window; actual measured index value; event duration.
 
-### For checking if a worker is eligible for a payout
-Hours logged in on the event day — minimum 2 hours. GPS confirmation the worker was in the affected zone. Activity in the 7 days before the event — minimum 3 active days. Whether the event overlapped the 7pm to 11pm incentive window. The actual measured index value: rainfall in mm, Heat Index in degrees Celsius, AQI number. How long the event lasted — partial versus full day rate.
+For fraud scoring: GPS versus accelerometer match; location plausibility; claim frequency this season; earnings drop without trigger firing; activity on another platform during event; pre-event inactivity relative to forecast; identity check result; zone-level synchronized drops; recent baseline changes.
 
-### For scoring fraud risk
-GPS movement matched against accelerometer readings. Whether location changes are physically plausible given time elapsed. Number of claims filed this season. Whether earnings dropped without a corresponding trigger event firing. Whether the worker was active on another platform during the event window. Whether they went inactive in the days before a publicly forecast bad weather event. Identity verification result from the event-time check. Whether the zone as a whole shows suspicious synchronized drops. Whether the earnings baseline was recently changed before the event.
-
-### For calculating the final payout amount
-The Average Daily Earning — BWE divided by 7, adjusted for vehicle cost ratio. Coverage tier selected by the worker. Severity tier of the trigger event — Tier 1 at 25%, Tier 2 at 60%, Tier 3 at 100% of daily earning. Whether the event hit the 7pm to 11pm incentive window. The fraud score outcome. Weekly payout cap based on tier percentage of BWE.
+For payout calculation: Average Daily Earning (BWE divided by 7, adjusted for cost ratio); coverage tier; trigger severity tier at 25, 60, or 100 percent; whether event hit incentive window; fraud score outcome; weekly payout cap.
 
 ---
 
-## One more factor we are adding: platform score recovery
-
-This came out of reading the research carefully. When a disruption forces a worker offline, their platform rating often drops in the following 3 to 5 days because their order acceptance rate falls and their completion rate looks worse. The platform's algorithm then assigns them fewer orders during that window — so the income loss continues even after the weather clears.
-
-No insurance product we found addresses this. AIPS will track changes in acceptance rate and order assignment frequency in the 5 days after a confirmed trigger event. If a measurable drop occurs, the payout includes a Score Recovery Supplement — a small additional amount to compensate for the algorithmic penalty that follows the disruption.
-
-We think this is genuinely novel. The research on gig worker income volatility makes clear that the damage from a disruption outlasts the disruption itself, but no one has tried to insure the aftereffect.
-
----
-
-## Our tech stack and why we made these choices
+## Tech stack
 
 ```
 Frontend
-React with Tailwind CSS, built as a Progressive Web App
-
-We chose PWA over a native Android app for one practical reason:
-many Zepto partners use entry-level phones with limited storage.
-A PWA installs like an app but does not require Play Store space.
-It also works partially offline, which matters during the exact
-events we are insuring against.
+React with Tailwind CSS as a Progressive Web App.
+Chose PWA over native because many Zepto partners run
+entry-level phones with limited storage. Also works
+partially offline, which matters during connectivity shutdowns.
 
 Backend
-Node.js with Express
-
-We are all more comfortable in JavaScript than in Go or Java.
-For a 6-week build, using what the team knows well is the right call.
+Node.js with Express.
+We are most comfortable in JavaScript.
+For a 6-week build, using what the team knows well beats
+trying to learn a new language mid-project.
 
 ML layer
-Python with FastAPI
-
-Python is the obvious choice for anything involving data processing
-and model serving. FastAPI is lightweight and easy to connect to
-the Node backend via REST.
+Python with FastAPI.
+Standard for data processing. FastAPI connects cleanly
+to the Node backend via REST.
 
 Blockchain
-Polygon with Solidity smart contracts, Chainlink oracles
-
-Reasons explained in the blockchain section above.
+Polygon with Solidity. Simulated in MVP, full
+Chainlink integration in Phase 3.
 
 Database
-PostgreSQL for worker profiles, policies, and payout records
-Redis for caching the real-time trigger state and zone status
-TimescaleDB for storing time-series data — earnings history,
-trigger event logs, fraud score history
+PostgreSQL for profiles, policies, payout records.
+Redis for real-time trigger state and zone status cache.
+TimescaleDB for earnings history and trigger logs.
+Added TimescaleDB because standard PostgreSQL degrades
+on time-series queries at scale and our logs grow fast.
 
-We added TimescaleDB specifically because standard PostgreSQL
-gets slow on time-series queries once you have millions of rows.
-The earnings history and trigger log tables will grow fast.
-
-External APIs
-OpenWeather One Call API — rainfall, temperature, humidity (free tier)
-OpenAQ API — AQI data, open source and free
-SFLC.in RSS feed — internet shutdown tracker, public
-Razorpay Test Mode — mock UPI payouts for the demo
-Simulated Zepto and Blinkit partner API — we do not have real
-access to platform data, so we are building a mock that returns
+External data
+OpenWeather One Call API — rainfall, temperature, humidity
+OpenAQ — AQI, open source
+SFLC.in RSS — shutdown tracker
+Razorpay Test Mode — mock payouts
+Simulated platform API — we do not have real Zepto or
+Blinkit data access so we built a mock that returns
 plausible order logs and zone status flags
 ```
 
 ---
 
-## What we are actually building in 6 weeks versus what comes later
-
-We want to be honest about scope. Here is the line.
-
-| Feature | In the hackathon build | Post-hackathon |
-|---------|----------------------|----------------|
-| Trigger engine | Rule-based, 5 triggers, polling every 15 min | ML-enhanced with adaptive thresholds |
-| Premium calculation | Weighted formula | XGBoost trained on historical data |
-| Fraud detection | Rule checklist plus GPS-accelerometer check | LSTM model plus Isolation Forest ensemble |
-| Platform integration | Simulated mock API | Real Zepto and Blinkit partnership |
-| AQI data | OpenAQ aggregated | Direct CPCB feed plus edge sensors |
-| Payouts | Razorpay sandbox | Live UPI |
-| Identity | Government ID simulation | Aadhaar OTP plus e-Shram ID |
-| City coverage | Delhi, Mumbai, Bengaluru, Hyderabad | Pan-India |
-
-The rule-based MVP is not a shortcut. For a product that affects someone's income, explainability matters more than model sophistication at launch. A worker should be able to understand why they did or did not get paid. A formula can be explained. A neural network output often cannot.
-
----
-
-## 6-week build plan
-
-Phase 1, weeks 1 and 2 (now): Research, persona definition, trigger design, premium model, system architecture, this README, basic onboarding wireframe.
-
-Phase 2, weeks 3 and 4: Worker registration with simulated ID verification. Policy engine with live BWE calculation. Trigger engine connected to OpenWeather and OpenAQ. Claims engine with Razorpay sandbox payout. Worker dashboard showing coverage status and payout history.
-
-Phase 3, weeks 5 and 6: ML premium pricing model. Fraud detection with GPS and accelerometer cross-check. Insurer admin dashboard with zone risk map. Blockchain smart contract integration on Polygon testnet. End-to-end demo where we simulate a rainstorm and show the automatic payout happening.
-
----
-
 ## What we do not cover
 
-These are hard limits, not gray areas.
+Health or medical expenses. Life insurance or accidental death. Vehicle repair. Personal illness or voluntary time off. Platform deactivation. Long-term disability.
 
-Health or medical expenses. Life insurance or accidental death. Vehicle repair costs. Personal illness or voluntary time off. Platform deactivation or algorithm changes. Long-term disability.
-
-AIPS covers only income lost because of an external event the worker could not predict or control — weather, pollution, curfews, internet shutdowns.
+Income lost because of something the worker could not predict or control. That is it.
 
 ---
 
 ## Data sources
 
-| What we need | Where we get it | Cost |
-|--------------|----------------|------|
-| Hourly rainfall | OpenWeather One Call API | Free tier |
-| Temperature and humidity | OpenWeather One Call API | Free tier |
-| Air quality index | OpenAQ API | Free, open source |
-| GRAP stage alerts | CPCB and CAQM scraper | Simulated in MVP |
-| Internet shutdown records | SFLC.in RSS tracker | Free, public |
-| Zone closure data | Platform API | Simulated mock |
-| UPI payouts | Razorpay Test Mode | Sandbox |
+| Need | Source | Cost |
+|------|--------|------|
+| Hourly rainfall | OpenWeather One Call API | Free |
+| Temperature and humidity | OpenWeather One Call API | Free |
+| AQI | OpenAQ | Free, open source |
+| GRAP alerts | CPCB and CAQM scraper | Simulated in MVP |
+| Shutdown records | SFLC.in RSS | Free, public |
+| Zone closure | Platform API | Simulated mock |
+| Payouts | Razorpay Test Mode | Sandbox |
 
 ---
 
-## Submission links
-
-GitHub repository: to be added
-2-minute demo video: to be added
-Hackathon: Guidewire DEVTrails 2026
-
----
-
-AIPS: because the worker who delivered your groceries in the rain deserves a safety net.
